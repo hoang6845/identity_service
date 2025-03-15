@@ -28,8 +28,11 @@ public class userController {
     }
 
     @GetMapping("/users")
-    public List<UserEntity> getUsers(){
-        return userService.getAllUsers();
+    public ApiResponse<List<UserResponse>> getUsers(){
+        return ApiResponse.<List<UserResponse>>builder()
+                .code(1000)
+                .result(userService.getAllUsers())
+                .build();
     }
 
     @GetMapping("/users/{id}")

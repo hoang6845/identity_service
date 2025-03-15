@@ -34,8 +34,8 @@ public class UserService {
         return userRepository.save(userEntity);
     }
 
-    public List<UserEntity> getAllUsers(){
-        return userRepository.findAll();
+    public List<UserResponse> getAllUsers(){
+        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
     }
 
     public UserResponse getUserById(String id){

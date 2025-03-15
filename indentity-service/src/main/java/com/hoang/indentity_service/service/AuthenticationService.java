@@ -68,7 +68,6 @@ public class AuthenticationService {
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(jwsHeader, payload);
-
         jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
         return jwsObject.serialize();
     }
@@ -76,13 +75,9 @@ public class AuthenticationService {
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         String token = request.getToken();
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
         SignedJWT signedJWT = SignedJWT.parse(token);
-
         Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
-
         boolean verified = signedJWT.verify(verifier);
-
         return IntrospectResponse.builder()
                 .valid(verified && expirationDate.after(new Date()))
                 .build();
