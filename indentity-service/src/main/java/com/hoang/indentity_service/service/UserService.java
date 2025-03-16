@@ -9,15 +9,23 @@ import com.hoang.indentity_service.exception.AppException;
 import com.hoang.indentity_service.exception.ErrorCode;
 import com.hoang.indentity_service.mapper.IUserMapper;
 import com.hoang.indentity_service.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreFilter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,10 +44,12 @@ public class UserService {
         return userRepository.save(userEntity);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<UserResponse> getAllUsers(){
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
     }
 
+    @PostAuthorize("returnObject.username == authentication.name || hasAuthority('ROLE_ADMIN')")
     public UserResponse getUserById(String id){
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND)));
@@ -52,9 +62,15 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(u));
     }
 
-    public boolean deleteUser(String id){
-        UserEntity u = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        userRepository.deleteById(id);
+    //chỉ có admin mới được xóa, khi xóa thì kiểm tra trong danh sách ids để không xóa admin bằng filter
+    @Transactional(rollbackOn = AppException.class)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreFilter("filterObject != T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getPrincipal().getClaim('Id')")
+    public boolean deleteUser(List<String> ids){
+        for (String id:ids){
+            UserEntity u = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+            userRepository.deleteById(id);
+        }
         return true;
     }
 }

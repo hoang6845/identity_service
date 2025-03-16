@@ -59,9 +59,10 @@ public class AuthenticationService {
     private String generateJWToken(UserEntity user) throws JOSEException {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
+                .subject(user.getUsername()) //authentication.name
                 .issuer("indentity-service")
-                .claim("scope", user.getRole().getCodeRole())
+                .claim("scope", user.getRole().getCodeRole()) //authentication.authorities
+                .claim("Id", user.getId())
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()

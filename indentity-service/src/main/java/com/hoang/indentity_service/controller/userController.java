@@ -12,9 +12,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -37,7 +39,7 @@ public class userController {
 
         log.info("Username : {}", authentication.getName());
         log.info("Roles : {}", authentication.getAuthorities());
-
+        log.info("Id : {}", Optional.ofNullable(((Jwt) authentication.getPrincipal()).getClaim("Id")).orElse(""));
         return ApiResponse.<List<UserResponse>>builder()
                 .code(1000)
                 .result(userService.getAllUsers())
@@ -61,9 +63,9 @@ public class userController {
 
     }
 
-    @DeleteMapping("/users/{id}")
-    public String deleteUser(@PathVariable String id){
-        if (userService.deleteUser(id)) return "Deleted";
+    @DeleteMapping("/users")
+    public String deleteUser(@RequestBody List<String> Ids){
+        if (userService.deleteUser(Ids)) return "Deleted";
         return "Not Deleted";
     }
 }
