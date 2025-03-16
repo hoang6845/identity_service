@@ -19,15 +19,15 @@ public class IUserMapperImpl implements IUserMapper {
             return null;
         }
 
-        UserEntity userEntity = new UserEntity();
+        UserEntity.UserEntityBuilder userEntity = UserEntity.builder();
 
-        userEntity.setUsername( request.getUsername() );
-        userEntity.setPassword( request.getPassword() );
-        userEntity.setFirstName( request.getFirstName() );
-        userEntity.setLastName( request.getLastName() );
-        userEntity.setBirthDate( request.getBirthDate() );
+        userEntity.username( request.getUsername() );
+        userEntity.password( request.getPassword() );
+        userEntity.firstName( request.getFirstName() );
+        userEntity.lastName( request.getLastName() );
+        userEntity.birthDate( request.getBirthDate() );
 
-        return userEntity;
+        return userEntity.build();
     }
 
     @Override
@@ -52,10 +52,10 @@ public class IUserMapperImpl implements IUserMapper {
 
         userResponse.id( userEntity.getId() );
         userResponse.username( userEntity.getUsername() );
-        userResponse.password( userEntity.getPassword() );
         userResponse.firstName( userEntity.getFirstName() );
         userResponse.lastName( userEntity.getLastName() );
         userResponse.birthDate( userEntity.getBirthDate() );
+        userResponse.role( userEntity.getRole() );
 
         userResponse.fullName( getFullName(userEntity.getFirstName(), userEntity.getLastName()) );
 

@@ -49,18 +49,19 @@ public class AuthenticationService {
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        String token = generateJWToken(authenticationRequest.getUsername());
+        String token = generateJWToken(userEntity);
         return AuthenticationReponse.builder()
                 .token(token)
                 .authenticated(true)
                 .build();
     }
 
-    private String generateJWToken(String username) throws JOSEException {
+    private String generateJWToken(UserEntity user) throws JOSEException {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(user.getUsername())
                 .issuer("indentity-service")
+                .claim("scope", user.getRole().getCodeRole())
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()

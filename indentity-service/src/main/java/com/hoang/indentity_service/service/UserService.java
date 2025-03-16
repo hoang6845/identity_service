@@ -2,7 +2,9 @@ package com.hoang.indentity_service.service;
 
 import com.hoang.indentity_service.dto.request.UserCreationRequest;
 import com.hoang.indentity_service.dto.response.UserResponse;
+import com.hoang.indentity_service.entity.Roles;
 import com.hoang.indentity_service.entity.UserEntity;
+import com.hoang.indentity_service.enums.Role;
 import com.hoang.indentity_service.exception.AppException;
 import com.hoang.indentity_service.exception.ErrorCode;
 import com.hoang.indentity_service.mapper.IUserMapper;
@@ -22,15 +24,15 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
     UserRepository userRepository;
-
     IUserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     public UserEntity CreateRequest(UserCreationRequest request) {
         if (userRepository.existsByUsername((request.getUsername())))
             throw new AppException(ErrorCode.USER_EXISTED);
         UserEntity userEntity = userMapper.toUserEntity(request);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
+        userEntity.setRole(new Roles(Role.ROLE_USER.getCodeRole(), Role.ROLE_USER.getNameRole()));
         return userRepository.save(userEntity);
     }
 

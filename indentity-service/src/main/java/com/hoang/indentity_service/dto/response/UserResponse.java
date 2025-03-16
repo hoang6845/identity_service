@@ -1,24 +1,23 @@
 package com.hoang.indentity_service.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.hoang.indentity_service.entity.Roles;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class UserResponse {
-    private String id;
-    private String username;
-    private String password;
-    private String firstName;
-    private String lastName;
-    private LocalDate birthDate;
-    private String fullName;
-
-
+    String id;
+    String username;
+    String firstName;
+    String lastName;
+    LocalDate birthDate;
+    String fullName;
+    Roles role;
 }
