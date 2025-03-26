@@ -18,6 +18,7 @@ import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.access.prepost.PreFilter;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,6 +43,18 @@ public class UserService {
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
         userEntity.setRole(new Roles(Role.ROLE_USER.getCodeRole(), Role.ROLE_USER.getNameRole()));
         return userRepository.save(userEntity);
+    }
+
+    public UserResponse getMyInfo(){
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        //khi 1 cái request được xác thực, thì thông tin user đăng nhập lưu trữ trong SecurityContextHolder
+        // getContext để lấy user hiện tại
+        Authentication authentication = securityContext.getAuthentication();
+        String name = authentication.getName();
+
+        UserEntity u =userRepository.findByUsername(name)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserResponse(u);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

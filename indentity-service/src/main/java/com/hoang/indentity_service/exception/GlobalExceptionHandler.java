@@ -2,6 +2,7 @@ package com.hoang.indentity_service.exception;
 
 import com.hoang.indentity_service.dto.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,7 +17,9 @@ public class GlobalExceptionHandler {
         ApiResponse<String> apiReponse = new ApiResponse<String>();
         apiReponse.setMessage(errorCode.getMessage());
         apiReponse.setCode(errorCode.getCode());
-        return ResponseEntity.badRequest().body(apiReponse);
+        return ResponseEntity.
+                status(errorCode.getHttpStatusCode())
+                .body(apiReponse);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
@@ -32,15 +35,35 @@ public class GlobalExceptionHandler {
         ApiResponse apiReponse = new ApiResponse();
         apiReponse.setMessage(errorCode.getMessage());
         apiReponse.setCode(errorCode.getCode());
-        return ResponseEntity.badRequest().body(apiReponse);
+        return ResponseEntity.
+                status(errorCode.getHttpStatusCode())
+                .body(apiReponse);
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ResponseEntity<ApiResponse> HandlingAccessDeniedException(AccessDeniedException e){
+        ErrorCode errorCode = ErrorCode.ACCESS_DENIED;
+        ApiResponse apiReponse = ApiResponse
+                .builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
+        return ResponseEntity
+                .status(errorCode.getHttpStatusCode())
+                .body(apiReponse);
     }
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse> HandlingException(Exception e){
         ApiResponse<String> apiReponse = new ApiResponse<String>();
         apiReponse.setMessage(e.getMessage());
-        apiReponse.setCode(ErrorCode.UNKNOWN_ERROR.getCode());
-        return ResponseEntity.badRequest().body(apiReponse);
+        ErrorCode errorCode = ErrorCode.UNKNOWN_ERROR;
+        apiReponse.setCode(errorCode.getCode());
+        return ResponseEntity.
+                status(errorCode.getHttpStatusCode())
+                .body(apiReponse);
     }
+
+
 
 }
