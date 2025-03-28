@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 
 @Data
@@ -24,6 +25,7 @@ public class UserCreationRequest {
     String lastName;
     @AgeOver18
     LocalDate birthDate;
+    Set<String> codeRoles;
 
 
 }

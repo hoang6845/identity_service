@@ -55,8 +55,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse> HandlingException(Exception e){
+        e.printStackTrace();
         ApiResponse<String> apiReponse = new ApiResponse<String>();
-        apiReponse.setMessage(e.getMessage());
+        apiReponse.setMessage("lỗi : "+e.getMessage());
         ErrorCode errorCode = ErrorCode.UNKNOWN_ERROR;
         apiReponse.setCode(errorCode.getCode());
         return ResponseEntity.

@@ -8,6 +8,7 @@ import com.hoang.indentity_service.enums.Role;
 import com.hoang.indentity_service.exception.AppException;
 import com.hoang.indentity_service.exception.ErrorCode;
 import com.hoang.indentity_service.mapper.IUserMapper;
+import com.hoang.indentity_service.repository.RolesRepository;
 import com.hoang.indentity_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -25,8 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,14 +35,17 @@ public class UserService {
     UserRepository userRepository;
     IUserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    RolesRepository rolesRepository;
 
-    public UserEntity CreateRequest(UserCreationRequest request) {
+    public UserResponse CreateRequest(UserCreationRequest request) {
         if (userRepository.existsByUsername((request.getUsername())))
             throw new AppException(ErrorCode.USER_EXISTED);
         UserEntity userEntity = userMapper.toUserEntity(request);
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
-        userEntity.setRole(new Roles(Role.ROLE_USER.getCodeRole(), Role.ROLE_USER.getNameRole()));
-        return userRepository.save(userEntity);
+        List<Roles> rolesList = rolesRepository.findAllById(request.getCodeRoles());
+        Set<Roles> roles = new HashSet<>(rolesList);
+        userEntity.setRoles(roles);
+        return userMapper.toUserResponse(userRepository.save(userEntity));
     }
 
     public UserResponse getMyInfo(){
@@ -72,6 +75,10 @@ public class UserService {
         UserEntity u = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         request.setUsername(null);
         userMapper.UpdateUserEntity(u, request);
+        u.setPassword(passwordEncoder.encode(request.getPassword()));
+        List<Roles> rolesList = new ArrayList<>(rolesRepository.findAllById(request.getCodeRoles()));
+        Set<Roles> roles = new HashSet<>(rolesList);
+        u.setRoles(roles);
         return userMapper.toUserResponse(userRepository.save(u));
     }
 

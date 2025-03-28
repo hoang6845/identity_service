@@ -30,8 +30,16 @@ public class UserEntity {
     String lastName;
     @Column
     LocalDate birthDate;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "codeRole", nullable = false) //khoa ngoai trong bang userEntity
-    @JsonManagedReference
-    Roles role;
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name = "codeRole", nullable = false) //khoa ngoai trong bang userEntity, coderole giong ten khoa chinh trong userEntity
+//    @JsonManagedReference
+//    Roles role;
+
+    @ManyToMany
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "codeRole"),
+            inverseJoinColumns = @JoinColumn(name = "id")
+    )
+    Set<Roles> roles;
 }

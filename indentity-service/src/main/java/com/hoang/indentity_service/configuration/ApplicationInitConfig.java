@@ -11,6 +11,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -22,9 +25,11 @@ public class ApplicationInitConfig {
     ApplicationRunner applicationRunner(UserRepository userRepository){
         return args -> {
             if (userRepository.findByUsername("admin").isEmpty()){
+                Set<Roles> roles = new HashSet<>();
+                roles.add(new Roles(Role.ROLE_ADMIN.getCodeRole(), Role.ROLE_ADMIN.getNameRole()));
                 UserEntity user = UserEntity.builder()
                         .username("admin")
-                        .role(new Roles(Role.ROLE_ADMIN.getCodeRole(), Role.ROLE_ADMIN.getNameRole()))
+                        .roles(roles)
                         .password(passwordEncoder.encode("<PASSWORD>"))
                         .build();
                 userRepository.save(user);

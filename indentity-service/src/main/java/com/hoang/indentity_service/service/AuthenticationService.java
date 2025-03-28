@@ -4,6 +4,7 @@ import com.hoang.indentity_service.dto.request.AuthenticationRequest;
 import com.hoang.indentity_service.dto.request.IntrospectRequest;
 import com.hoang.indentity_service.dto.response.AuthenticationReponse;
 import com.hoang.indentity_service.dto.response.IntrospectResponse;
+import com.hoang.indentity_service.entity.Roles;
 import com.hoang.indentity_service.entity.UserEntity;
 import com.hoang.indentity_service.exception.AppException;
 import com.hoang.indentity_service.exception.ErrorCode;
@@ -22,11 +23,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.sql.Array;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -61,7 +64,7 @@ public class AuthenticationService {
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername()) //authentication.name
                 .issuer("indentity-service")
-                .claim("scope", user.getRole().getCodeRole()) //authentication.authorities
+                .claim("scope", buildScope(user)) //authentication.authorities
                 .claim("Id", user.getId())
                 .issueTime(new Date())
                 .expirationTime(new Date(
@@ -72,6 +75,20 @@ public class AuthenticationService {
         JWSObject jwsObject = new JWSObject(jwsHeader, payload);
         jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
         return jwsObject.serialize();
+    }
+
+    public String[] buildScope(UserEntity user) {
+        Set<String> scope = new HashSet<>();
+        if (!CollectionUtils.isEmpty(user.getRoles())) {
+            user.getRoles().forEach(role -> {
+                scope.add("ROLE_"+role.getCodeRole());
+                role.getPermissions().forEach(permission -> {
+                    System.out.println(permission.getCodePermission());
+                    scope.add(permission.getCodePermission());
+                });
+            });
+        }
+        return scope.toArray(String[]::new);
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {

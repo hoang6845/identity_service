@@ -7,10 +7,12 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface IUserMapper {
+    @Mapping(target = "roles", ignore = true)
     UserEntity toUserEntity(UserCreationRequest request);
 
 
     @Mapping(target = "username", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     void UpdateUserEntity(@MappingTarget UserEntity userEntity, UserCreationRequest request);
 
     //   @Mapping(target = "fullName", expression = "java(userEntity.getFirstName()+ \" \" + userEntity.getLastName())")
