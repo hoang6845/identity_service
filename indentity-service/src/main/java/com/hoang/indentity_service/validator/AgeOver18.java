@@ -9,8 +9,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Constraint(validatedBy = AgeOver18Validator.class)
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD) //muon no được apply ở đâu
+@Retention(RetentionPolicy.RUNTIME) //được xử lys lúc nào
 public @interface AgeOver18 {
     String message() default "User must be at least 18 years old";
     Class<?>[] groups() default {};

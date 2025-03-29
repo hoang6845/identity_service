@@ -1,6 +1,7 @@
 package com.hoang.indentity_service.dto.request;
 
 import com.hoang.indentity_service.validator.AgeOver18;
+import com.hoang.indentity_service.validator.Dob;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -23,7 +24,9 @@ public class UserCreationRequest {
     String password;
     String firstName;
     String lastName;
-    @AgeOver18
+//    @AgeOver18
+    @Dob(min = 18, max = 100, message = "DOB_INVALID") //18 den 100 tuoi
+    @NotNull(message = "DOB_NULL")
     LocalDate birthDate;
     Set<String> codeRoles;
 
