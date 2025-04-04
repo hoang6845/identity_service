@@ -2,6 +2,7 @@ package com.hoang.indentity_service.controller;
 
 import com.hoang.indentity_service.dto.request.AuthenticationRequest;
 import com.hoang.indentity_service.dto.request.IntrospectRequest;
+import com.hoang.indentity_service.dto.request.LogoutRequest;
 import com.hoang.indentity_service.dto.response.ApiResponse;
 import com.hoang.indentity_service.dto.response.AuthenticationReponse;
 import com.hoang.indentity_service.dto.response.IntrospectResponse;
@@ -38,6 +39,14 @@ public class AuthenticationController {
         return ApiResponse.<IntrospectResponse>builder()
                 .code(1000)
                 .result(result)
+                .build();
+    }
+
+    @PostMapping("/auth/log-out")
+    public ApiResponse<Void> logOut(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        authenticationService.logout(request);
+        return ApiResponse.<Void>builder()
+                .code(1000)
                 .build();
     }
 }
