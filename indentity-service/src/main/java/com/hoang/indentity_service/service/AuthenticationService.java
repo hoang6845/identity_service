@@ -31,6 +31,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -134,5 +135,13 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         return signedJWT;
+    }
+
+    public void removeExpiredTokens(){
+        List<InvalidatedToken> listToken =  invalidatedTokenRepository.findAll();
+        List<String> listTokenId = listToken.stream().filter(token -> token.getExp().before(new Date())).map(InvalidatedToken::getId).toList();
+        for (String id: listTokenId){
+            invalidatedTokenRepository.deleteById(id);
+        }
     }
 }
