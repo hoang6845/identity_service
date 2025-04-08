@@ -3,6 +3,7 @@ package com.hoang.indentity_service.service;
 import com.hoang.indentity_service.dto.request.AuthenticationRequest;
 import com.hoang.indentity_service.dto.request.IntrospectRequest;
 import com.hoang.indentity_service.dto.request.LogoutRequest;
+import com.hoang.indentity_service.dto.request.RefreshRequest;
 import com.hoang.indentity_service.dto.response.AuthenticationReponse;
 import com.hoang.indentity_service.dto.response.IntrospectResponse;
 import com.hoang.indentity_service.entity.InvalidatedToken;
@@ -93,6 +94,25 @@ public class AuthenticationService {
                 .build();
 
         invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    public AuthenticationReponse refreshToken(RefreshRequest token) throws ParseException, JOSEException {
+        SignedJWT signedJWT = verifyToken(token.getToken());
+
+        String jwtid = signedJWT.getJWTClaimsSet().getJWTID();
+        Date expirationTome = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        invalidatedTokenRepository.save(InvalidatedToken.builder()
+                .id(jwtid)
+                .exp(expirationTome)
+                .build());
+
+        String username = signedJWT.getJWTClaimsSet().getSubject();
+        String newToken = generateJWToken(userRepository.findByUsername(username).orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED)));
+        return AuthenticationReponse.builder()
+                .token(newToken)
+                .authenticated(true)
+                .build();
     }
 
     public String[] buildScope(UserEntity user) {

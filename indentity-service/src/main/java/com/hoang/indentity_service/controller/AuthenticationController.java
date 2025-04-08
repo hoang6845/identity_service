@@ -3,6 +3,7 @@ package com.hoang.indentity_service.controller;
 import com.hoang.indentity_service.dto.request.AuthenticationRequest;
 import com.hoang.indentity_service.dto.request.IntrospectRequest;
 import com.hoang.indentity_service.dto.request.LogoutRequest;
+import com.hoang.indentity_service.dto.request.RefreshRequest;
 import com.hoang.indentity_service.dto.response.ApiResponse;
 import com.hoang.indentity_service.dto.response.AuthenticationReponse;
 import com.hoang.indentity_service.dto.response.IntrospectResponse;
@@ -46,6 +47,15 @@ public class AuthenticationController {
     public ApiResponse<Void> logOut(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder()
+                .code(1000)
+                .build();
+    }
+
+    @PostMapping("auth/refresh")
+    public ApiResponse<AuthenticationReponse> refreshRequest(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        AuthenticationReponse authenticationReponse = authenticationService.refreshToken(request);
+        return ApiResponse.<AuthenticationReponse>builder()
+                .result(authenticationReponse)
                 .code(1000)
                 .build();
     }
