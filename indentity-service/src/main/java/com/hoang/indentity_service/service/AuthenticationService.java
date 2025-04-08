@@ -47,6 +47,14 @@ public class AuthenticationService {
     @Value("${jwt.signerKey}")
     protected String SIGNER_KEY;
 
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    protected long validDuration;
+
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    protected long refreshDuration;
+
     public AuthenticationReponse authenticate(AuthenticationRequest authenticationRequest) throws JOSEException {
         System.out.println(authenticationRequest.getUsername()+" "+authenticationRequest.getPassword());
         UserEntity userEntity = userRepository.findByUsername(authenticationRequest.getUsername())
@@ -73,7 +81,7 @@ public class AuthenticationService {
                 .jwtID(UUID.randomUUID().toString())
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                        Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli()
                 ))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -83,21 +91,25 @@ public class AuthenticationService {
     }
 
     public void logout(LogoutRequest request ) throws ParseException, JOSEException {
-        SignedJWT signedJWT = verifyToken(request.getToken());
+        try{
+            SignedJWT signedJWT = verifyToken(request.getToken(), true);
 
-        String jwtid = signedJWT.getJWTClaimsSet().getJWTID();
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+            String jwtid = signedJWT.getJWTClaimsSet().getJWTID();
+            Date expirationTime = new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(refreshDuration, ChronoUnit.SECONDS).toEpochMilli());
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jwtid)
-                .exp(expirationTime)
-                .build();
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jwtid)
+                    .exp(expirationTime)
+                    .build();
 
-        invalidatedTokenRepository.save(invalidatedToken);
+            invalidatedTokenRepository.save(invalidatedToken);
+        }catch (AppException exception){
+            log.info(exception.getMessage());
+        }
     }
 
     public AuthenticationReponse refreshToken(RefreshRequest token) throws ParseException, JOSEException {
-        SignedJWT signedJWT = verifyToken(token.getToken());
+        SignedJWT signedJWT = verifyToken(token.getToken(), true);
 
         String jwtid = signedJWT.getJWTClaimsSet().getJWTID();
         Date expirationTome = signedJWT.getJWTClaimsSet().getExpirationTime();
@@ -133,7 +145,7 @@ public class AuthenticationService {
         String token = request.getToken();
         boolean isValid = true;
         try {
-            verifyToken(token);
+            verifyToken(token, false);
         }catch (Exception e) {
             isValid = false;
         }
@@ -142,12 +154,18 @@ public class AuthenticationService {
                 .build();
     }
 
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
-        Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expirationTime = isRefresh?
+            new Date(signedJWT.getJWTClaimsSet()
+                    .getIssueTime()
+                    .toInstant()
+                    .plus(refreshDuration, ChronoUnit.SECONDS)
+                    .toEpochMilli())
+        :signedJWT.getJWTClaimsSet().getExpirationTime();
         boolean verified = signedJWT.verify(verifier);
-        if (!(verified&&expirationDate.after((new Date())))){
+        if (!(verified&&expirationTime.after((new Date())))){
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
