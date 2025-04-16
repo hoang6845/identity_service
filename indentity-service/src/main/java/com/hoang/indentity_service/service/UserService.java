@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -38,6 +40,7 @@ public class UserService {
     RolesRepository rolesRepository;
 
     public UserResponse CreateRequest(UserCreationRequest request) {
+        log.info("Service: Create user");
         if (userRepository.existsByUsername((request.getUsername())))
             throw new AppException(ErrorCode.USER_EXISTED);
         UserEntity userEntity = userMapper.toUserEntity(request);
@@ -65,7 +68,7 @@ public class UserService {
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
     }
 
-    @PostAuthorize("returnObject.username == authentication.name || hasAuthority('ROLE_ADMIN')")
+    @PostAuthorize("returnObject.username == ame || hasAuthority('ROLE_ADMIN')")
     public UserResponse getUserById(String id){
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND)));

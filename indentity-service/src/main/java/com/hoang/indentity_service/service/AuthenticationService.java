@@ -74,7 +74,7 @@ public class AuthenticationService {
     private String generateJWToken(UserEntity user) throws JOSEException {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername()) //authentication.name
+                .subject(user.getUsername()) //ame
                 .issuer("indentity-service")
                 .claim("scope", buildScope(user)) //authentication.authorities
                 .claim("Id", user.getId())

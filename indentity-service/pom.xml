@@ -89,7 +89,24 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-oauth2-jose</artifactId>
+		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+<!--		hỗ trợ API ngày và giờ trong Java 8,
+ 			Bằng cách thêm dependency này vào dự án của bạn,
+ 			bạn sẽ cho phép Jackson chuyển đổi đúng cách các lớp java.time.*
+ 			(như LocalDate, LocalDateTime, Instant, ZonedDateTime, ...)
+ 			giữa JSON và đối tượng Java.-->
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 
 	</dependencies>
